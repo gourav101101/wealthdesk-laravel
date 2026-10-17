@@ -5,6 +5,12 @@
 
     RewriteEngine On
 
+    # A nested .htaccess can handle requests before the root's rewrite rules.
+    # Block explicit /public URLs while retaining internal asset rewrites and
+    # deployments whose DocumentRoot points directly to this directory.
+    RewriteCond %{THE_REQUEST} \s/+[^\s?]*/public(?:[/\s?]) [NC]
+    RewriteRule ^ - [F,END]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

@@ -1,10 +1,12 @@
-﻿# WealthDesk — Laravel
+# WealthDesk — Laravel
 
 The complete investment admin and client application rebuilt in Laravel 12, as requested. It uses Blade templates, Laravel session authentication, Eloquent, SQL migrations, private file storage, ordinary CSS, and a small amount of browser JavaScript. There is no Node.js/npm build, React, Vite, Cloudflare runtime, or ChatGPT login dependency.
 
 ## Open the application
 
-Local URL: **http://127.0.0.1:8000/login**
+XAMPP URL: **http://localhost/wealthdesk/login**. The current local database is MariaDB (`wealthdesk`); the previous SQLite records were imported and verified. Start Apache and MySQL in XAMPP Control Panel. The XAMPP folder links to this source folder, so changes are shared.
+
+See [the XAMPP and Hostinger guide](docs/hosting.md). `wealthdesk-hostinger.zip` includes production vendor dependencies and the root index.php / .htaccess layout. The source-only ZIP needs Composer. The optional PHP development server remains available at http://127.0.0.1:8000/login.
 
 The local PHP launcher uses Laravel?s own router and enables uploads up to the application?s 5 MB limit. You can also use php artisan serve if your PHP upload limits are configured.
 
@@ -35,13 +37,13 @@ For a fresh checkout:
 composer install
 Copy-Item .env.example .env
 php artisan key:generate
-New-Item -ItemType File -Path database/database.sqlite
+# Create an empty MariaDB database named wealthdesk and configure .env first.
 php artisan migrate
 php artisan wealthdesk:install --demo
 php scripts/serve.php
 ```
 
-Run the environment-copy and database-file commands only when those files do not already exist. To create an empty real workspace instead of sample data, omit --demo from wealthdesk:install and enter your chosen admin name, email, and password. The installer does not overwrite an existing administrator. Never rerun key:generate against an existing production installation.
+Copy the environment file only for a fresh installation; preserve an existing .env. To create an empty real workspace instead of sample data, omit --demo from wealthdesk:install and enter your chosen admin name, email, and password. The installer does not overwrite an existing administrator. Never rerun key:generate against an existing production installation.
 
 On this Windows installation, PHP's ZIP extension is available but disabled by default. If Composer reports a missing ZIP/unzip dependency, enable extension=zip in the PHP configuration, or invoke Composer's PHAR with php -d extension=zip for that command. Do not change the application to work around a missing PHP extension.
 
@@ -71,7 +73,7 @@ Pending deposits do not add funds. Creating a withdrawal reserves its amount ins
 
 Only Last trades realize P&L. Current positions display manually recorded unrealized P&L; orders and total-value entries do not change balance. Hold pauses a position without closing it. A calculation helper provides before-fees P&L; the administrator enters the final result. Edits/removals that would overdraw available funds are rolled back.
 
-Client deletion is implemented as archival to preserve financial history. Pending requests must be resolved before archival. Document downloads require an authenticated, authorized user; they are not placed in public storage. Password changes invalidate other sessions and are recorded without storing plaintext passwords.
+Client deletion is implemented as archival to preserve financial history. Pending requests must be resolved before archival. Document downloads require an authenticated, authorized user; they are not placed in public storage. Password changes invalidate other sessions. Login passwords are hashed; client passwords also have an encrypted copy for the requested admin reveal feature (see below).
 
 All displayed dates and date/time entry use India Standard Time; stored timestamps use UTC. Prices, trades, bank transfers, and deposit verification are manually managed, as in the PDF. No broker or payment gateway integration was specified.
 
@@ -83,7 +85,7 @@ php artisan view:cache
 composer validate --no-check-publish
 ```
 
-Feature tests use an isolated in-memory SQLite database. They cover login, roles, client isolation, view rendering, client editing, money precision, deposits, trade P&L, reservations/overdrafts, immutable withdrawal decisions, archives, protected uploads, QR details, password-change notifications, and CSV formula escaping.
+Feature tests use isolated SQLite by default; the full suite also passed against a separate MariaDB testing database (24 tests / 238 assertions). See docs/hosting.md for the MariaDB test command. They cover login, roles, client isolation, view rendering, client editing, money precision, deposits, trade P&L, reservations/overdrafts, immutable withdrawal decisions, archives, protected uploads, QR details, password-change notifications, and CSV formula escaping.
 
 A separate local browser review exercised actual admin/client logins, client creation, position and deposit forms, password changes, withdrawal submission/approval, and 1440px/390px layouts. It reported zero JavaScript exceptions, zero HTTP failures, and no horizontal overflow on the checked mobile pages. Review screenshots are local-only under storage/app/review.
 
@@ -93,14 +95,14 @@ The Laravel version needs a PHP server (Apache/Nginx with PHP-FPM, Laravel Forge
 
 1. Upload the application source and point the web document root to this project's public directory.
 2. Run composer install --no-dev --optimize-autoloader on the server.
-3. Create a server-specific .env from .env.example. Set APP_ENV=production, APP_DEBUG=false, APP_URL to the HTTPS domain, and SESSION_SECURE_COOKIE=true. Configure MySQL credentials or a writable SQLite path.
+3. Create a server-specific .env from .env.example. Set APP_ENV=production, APP_DEBUG=false, APP_URL to the HTTPS domain, and SESSION_SECURE_COOKIE=true. Configure the MariaDB credentials supplied by your host (DB_CONNECTION=mariadb).
 4. Generate APP_KEY once for a new installation. Keep that key for subsequent deployments.
 5. Run php artisan migrate --force and php artisan wealthdesk:install to create the first administrator interactively with your chosen credentials. Do not seed demo accounts on production.
 6. Make storage and bootstrap/cache writable, then run php artisan optimize. Configure PHP upload_max_filesize to at least 6M and post_max_size to at least 20M. public/.user.ini supplies those values on hosts that support per-directory PHP settings.
 
 No npm installation, frontend build, public storage link, external authentication, or queue worker is needed for the implemented workflows. Back up both the database and storage/app/private, which contains uploaded documents. Do not upload the local .env, local database, test uploads, browser profile, or review screenshots.
 
-The deployable source archive excludes local credentials, databases, uploads, caches, browser artifacts, and vendor dependencies; install Composer dependencies on the target server.
+The source archive excludes credentials, databases, uploads, caches, browser artifacts and vendor dependencies. The separate wealthdesk-hostinger.zip includes production vendor dependencies and no runtime data. Follow docs/hosting.md for the root-folder hosting layout.
 
 ## Readability and mobile design
 

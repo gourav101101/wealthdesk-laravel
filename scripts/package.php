@@ -11,11 +11,11 @@ $zip = new ZipArchive;
 if ($zip->open($archive, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) throw new RuntimeException('Could not create source archive.');
 $count = 0;
 $prefix = 'wealthdesk-laravel/';
-foreach (['artisan', 'composer.json', 'composer.lock', '.env.example', 'phpunit.xml', 'README.md', '.editorconfig', '.gitattributes', '.gitignore'] as $name) {
+foreach (['artisan', 'index.php', '.htaccess', '.user.ini', 'composer.json', 'composer.lock', '.env.example', '.env.hostinger.example', 'phpunit.xml', 'README.md', '.editorconfig', '.gitattributes', '.gitignore'] as $name) {
     $zip->addFile($root.DIRECTORY_SEPARATOR.$name, $prefix.$name);
     $count++;
 }
-foreach (['app', 'bootstrap', 'config', 'database', 'public', 'resources', 'routes', 'tests', 'scripts'] as $directory) {
+foreach (['app', 'bootstrap', 'config', 'database', 'public', 'resources', 'routes', 'tests', 'scripts', 'docs'] as $directory) {
     $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root.DIRECTORY_SEPARATOR.$directory, FilesystemIterator::SKIP_DOTS));
     foreach ($iterator as $file) {
         if (!$file->isFile() || $file->isLink()) continue;

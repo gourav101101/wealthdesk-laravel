@@ -1,0 +1,32 @@
+Options -Indexes
+DirectoryIndex index.php
+
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews
+    </IfModule>
+    RewriteEngine On
+
+    # Root-folder hosting: expose only the front controller and named public assets.
+    RewriteRule (^|/)\. - [F,END]
+    RewriteRule ^(?:app|bootstrap|config|database|docs|node_modules|resources|routes|scripts|storage|tests|vendor)(?:/|$) - [F,END,NC]
+    RewriteRule ^(?:artisan|composer\.(?:json|lock|phar)|phpunit\.xml|README\.md|.*\.(?:sql|sqlite|zip|bak|log))$ - [F,END,NC]
+
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+    RewriteCond %{HTTP:x-xsrf-token} .
+    RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
+
+    # Do not allow a second public entry point or executable files as assets.
+    RewriteRule ^public(?:/|$) - [F,END,NC]
+    RewriteRule ^(?:css|js)/.*\.(?:php[0-9]?|phtml|phar)(?:/|$) - [F,END,NC]
+    RewriteRule ^((?:css|js)/.+\.(?:css|js|map))$ public/$1 [END,NC]
+    RewriteRule ^(favicon\.svg|robots\.txt)$ public/$1 [END,NC]
+    RewriteRule ^index\.php$ - [END]
+    RewriteRule ^ index.php [END]
+</IfModule>
+
+# Fail closed if rewrite support is unavailable; public/ can be used as DocumentRoot.
+<IfModule !mod_rewrite.c>
+    Require all denied
+</IfModule>
