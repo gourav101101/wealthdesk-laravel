@@ -1,0 +1,8 @@
+@extends('layouts.app')
+@section('title','Request withdrawal')
+@section('heading','Request a withdrawal')
+@section('description','Requests are reviewed by the administrator.')
+@section('actions')<a class="btn secondary" href="{{ route('transactions.index',['tab'=>'Withdrawals']) }}">Back to withdrawals</a>@endsection
+@section('content')
+<section class="card edit-card narrow-card"><form method="post" action="{{ route('withdrawals.store') }}">@csrf<div class="modal-body">@if($adminView)<x-field name="client_id" label="Client" :options="$clients->where('archived',false)->mapWithKeys(fn($c)=>[$c->id=>$c->name.' · available '.\App\Support\Format::money($balances[$c->id]['available'])])->all()" :required="true"/>@elseif($selected)<input type="hidden" name="client_id" value="{{ $selected->id }}"><div class="available-strip"><span>Available to withdraw</span><strong>{{ \App\Support\Format::money($balances[$selected->id]['available']) }}</strong></div>@endif<x-field name="amount" label="Withdrawal amount (₹)" type="number" :required="true" min="0.01" step="0.01"/><x-field name="note" label="Note (optional)" type="textarea" maxlength="500"/><div class="info-box">The requested amount is reserved immediately. If declined, it becomes available again. Your advisor arranges payment to your registered bank account.</div><div class="modal-actions"><a class="btn secondary" href="{{ route('transactions.index',['tab'=>'Withdrawals']) }}">Cancel</a><button class="btn primary" type="submit" @disabled(!$clients->where('archived',false)->count())>Submit request <x-icon name="up-right" :size="16"/></button></div></div></form></section>
+@endsection
